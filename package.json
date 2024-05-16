@@ -1,0 +1,27 @@
+{
+  "name": "scrapper",
+  "version": "1.0.0",
+  "description": "Web scrapper to scrape off hotels data in Pokhara. Built with Node Js'",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "keywords": [
+    "Web",
+    "Scrapper",
+    "Hotels",
+    "Node",
+    "js"
+  ],
+  "author": "Shiva K Gurung",
+  "license": "ISC",
+  "dependencies": {
+    "@sparticuz/chromium": "^123.0.1",
+    "axios": "^1.6.8",
+    "cheerio": "^1.0.0-rc.12",
+    "express": "^4.19.2",
+    "puppeteer": "^22.8.2",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  }
+}
