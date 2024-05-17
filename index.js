@@ -11,7 +11,6 @@ async function autoScroll(page) {
         window.scrollBy(0, distance);
         totalHeight += distance;
 
-        // Check if reached the bottom of the page
         if (totalHeight >= document.body.scrollHeight) {
           clearInterval(scrollTimer);
           resolve();
@@ -25,52 +24,63 @@ async function autoScroll(page) {
 async function parseDetail(pageInner, browserInner){
   // console.log('inside parse function');
 
-  const nameElements = await pageInner.$$('.Io6YTe.fontBodyMedium.kR99db');
-  if (nameElements.length > 0) {
-        const firstThreeElements = nameElements.slice(0, 3);
-        for (const nameElement of firstThreeElements) {
-          // console.log('hello')
-          const value = await pageInner.evaluate(el => el.textContent, nameElement);
-            console.log(value);
-        }
-      } else {
-        console.log('No elements found with the class .DUwDvf.lfPIob');
-      }
-
+  let i=0, name, location, mapLocation, site, contact;
   const nameElement = await pageInner.$('.DUwDvf.lfPIob');
 if (nameElement) {
-  const value = await pageInner.evaluate(el => el.textContent, nameElement);
-  console.log(value);
+  name = await pageInner.evaluate(el => el.textContent, nameElement);
+  // console.log(name);
 } else {
   console.log('Element not found');
 }
 
-      await browserInner.close();
+  const nameElements = await pageInner.$$('.Io6YTe.fontBodyMedium.kR99db');
+  if (nameElements.length > 0) {
+        const firstThreeElements = nameElements.slice(0, 4);
+   
+        for (const nameElement of firstThreeElements) {
+          const value = await pageInner.evaluate(el => el.textContent, nameElement);
+          if (i == 0){
+            location = value;
+          }
+          else if(i == 1){
+            site = value;
+          }
+          else if(i == 2){
+            contact = value;
+          }
+          else {
+            mapLocation = value;
+          }
+          i++;
+        }
+      } else {
+        console.log('No elements found with the class .DUwDvf.lfPIob');
+      }
+const object =  {name, location, site, contact, mapLocation}
+console.log(object)
 
 }
 
 async function parsePlaces(page) {
-  // console.log("check");
 
   let places = [];
-  // const elements = await page.$$(".qBF1Pd.fontHeadlineSmall");
-  // if (elements && elements.length) {
-  //   for (const el of elements) {
-  //     const name = await el.evaluate((span) => span.textContent);
-  //     // places.push({ name });
-  //   }
-  // }
+
   const elements = await page.$$(".Nv2PK.THOPZb.CpccDe");
-  // console.log(elements);
+
   if (elements && elements.length) {
     for (const el of elements) {
       const link = await el.$eval("a", a => a.href);
-      // console.log(link);
+
       const browserInner = await puppeteer.launch({ headless: false });
+ 
+
+
       const pageInner = await browserInner.newPage();
       await pageInner.setViewport({ width: 1300, height: 2000 });
-      await pageInner.goto(link);
-      parseDetail(pageInner, browserInner);
+      await pageInner.goto(link, { waitUntil: 'networkidle2', timeout: 0 }); // Ensure the page is fully loaded
+
+      await parseDetail(pageInner, browserInner); // Await parseDetail function to ensure it completes
+      await browserInner.close();
     }
   }
   // console.log(elements)
@@ -85,9 +95,7 @@ async function parsePlaces(page) {
     "https://www.google.com/maps/search/hotels+in+pokhara/@28.1428736,84.1857381,9.55z"
   );
 
-  // // Initial parse of places
-  // let places = await parsePlaces(page);
-  // console.log(places);
+  
   let places = [];
 
   await autoScroll(page);
@@ -96,10 +104,8 @@ async function parsePlaces(page) {
     if (newPlaces.length > places.length) {
       places = newPlaces;
       // console.log(places);
-    } else {
+    } else {   
       clearInterval(5000); // Stop scrolling if no new content is loaded
     }
   }, 10000);
-
-  // await browser.close();
 })();
