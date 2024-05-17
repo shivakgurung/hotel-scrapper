@@ -22,9 +22,35 @@ async function autoScroll(page) {
     });
   });
 }
+async function parseDetail(pageInner, browserInner){
+  // console.log('inside parse function');
+
+  const nameElements = await pageInner.$$('.Io6YTe.fontBodyMedium.kR99db');
+  if (nameElements.length > 0) {
+        const firstThreeElements = nameElements.slice(0, 3);
+        for (const nameElement of firstThreeElements) {
+          // console.log('hello')
+          const value = await pageInner.evaluate(el => el.textContent, nameElement);
+            console.log(value);
+        }
+      } else {
+        console.log('No elements found with the class .DUwDvf.lfPIob');
+      }
+
+  const nameElement = await pageInner.$('.DUwDvf.lfPIob');
+if (nameElement) {
+  const value = await pageInner.evaluate(el => el.textContent, nameElement);
+  console.log(value);
+} else {
+  console.log('Element not found');
+}
+
+      await browserInner.close();
+
+}
 
 async function parsePlaces(page) {
-  console.log("check");
+  // console.log("check");
 
   let places = [];
   // const elements = await page.$$(".qBF1Pd.fontHeadlineSmall");
@@ -35,17 +61,19 @@ async function parsePlaces(page) {
   //   }
   // }
   const elements = await page.$$(".Nv2PK.THOPZb.CpccDe");
-  console.log(elements);
+  // console.log(elements);
   if (elements && elements.length) {
     for (const el of elements) {
-      const link = $(el).find("a").attr("href");
-      console.log(link);
-      // const browserInner = await puppeteer.launch({ headless: false });
-      // const pageInner = await browserInner.newPage();
-      // await pageInner.setViewport({ width: 1300, height: 2000 });
-      // await pageInner.goto(link);
+      const link = await el.$eval("a", a => a.href);
+      // console.log(link);
+      const browserInner = await puppeteer.launch({ headless: false });
+      const pageInner = await browserInner.newPage();
+      await pageInner.setViewport({ width: 1300, height: 2000 });
+      await pageInner.goto(link);
+      parseDetail(pageInner, browserInner);
     }
   }
+  // console.log(elements)
   return places;
 }
 
@@ -67,7 +95,7 @@ async function parsePlaces(page) {
     const newPlaces = await parsePlaces(page);
     if (newPlaces.length > places.length) {
       places = newPlaces;
-      console.log(places);
+      // console.log(places);
     } else {
       clearInterval(5000); // Stop scrolling if no new content is loaded
     }
