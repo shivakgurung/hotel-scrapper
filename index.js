@@ -2,15 +2,16 @@ const puppeteer = require("puppeteer");
 
 async function autoScroll(page) {
   await page.evaluate(async () => {
-    await new Promise((resolve) => {
+    await new Promise((resolve, reject) => {
       let totalHeight = 0;
-      const distance = 1000;
-      const scrollInterval = 1000;
+      const distance = 1000; // Increase or decrease as needed for scrolling distance
+      const scrollInterval = 1000; // Interval between scroll attempts
 
       const scrollAndCheckEnd = () => {
         window.scrollBy(0, distance);
         totalHeight += distance;
 
+        // Check if reached the bottom of the page
         if (totalHeight >= document.body.scrollHeight) {
           clearInterval(scrollTimer);
           resolve();
@@ -22,52 +23,27 @@ async function autoScroll(page) {
   });
 }
 
-async function parseDetail(pageInner) {
-  let name, location, mapLocation, site, contact;
-  const nameElement = await pageInner.$(".DUwDvf.lfPIob");
-  if (nameElement) {
-    name = await pageInner.evaluate((el) => el.textContent, nameElement);
-  } else {
-    console.log("Element not found");
-  }
+async function parsePlaces(page) {
+  console.log("check");
 
-  const nameElements = await pageInner.$$(".Io6YTe.fontBodyMedium.kR99db");
-  if (nameElements.length > 0) {
-    const firstFourElements = nameElements.slice(0, 4);
-    for (let i = 0; i < firstFourElements.length; i++) {
-      const value = await pageInner.evaluate(
-        (el) => el.textContent,
-        firstFourElements[i]
-      );
-      if (i === 0) location = value;
-      else if (i === 1) site = value;
-      else if (i === 2) contact = value;
-      else mapLocation = value;
-    }
-  } else {
-    console.log("No elements found with the class .DUwDvf.lfPIob");
-  }
-
-  const object = { name, location, site, contact, mapLocation };
-  console.log(object);
-  return object;
-}
-
-async function parsePlaces(page, browser) {
   let places = [];
+  // const elements = await page.$$(".qBF1Pd.fontHeadlineSmall");
+  // if (elements && elements.length) {
+  //   for (const el of elements) {
+  //     const name = await el.evaluate((span) => span.textContent);
+  //     // places.push({ name });
+  //   }
+  // }
   const elements = await page.$$(".Nv2PK.THOPZb.CpccDe");
-
+  // console.log(elements);
   if (elements && elements.length) {
     for (const el of elements) {
       const link = await el.$eval("a", (a) => a.href);
-
-      const pageInner = await browser.newPage();
-      await pageInner.setViewport({ width: 1300, height: 2000 });
-      await pageInner.goto(link, { waitUntil: "networkidle2", timeout: 0 });
-
-      const place = await parseDetail(pageInner);
-      places.push(place);
-      await pageInner.close();
+      console.log(link);
+      // const browserInner = await puppeteer.launch({ headless: false });
+      // const pageInner = await browserInner.newPage();
+      // await pageInner.setViewport({ width: 1300, height: 2000 });
+      // await pageInner.goto(link);
     }
   }
   return places;
@@ -81,17 +57,21 @@ async function parsePlaces(page, browser) {
     "https://www.google.com/maps/search/hotels+in+pokhara/@28.1428736,84.1857381,9.55z"
   );
 
-  await autoScroll(page);
-
+  // // Initial parse of places
+  // let places = await parsePlaces(page);
+  // console.log(places);
   let places = [];
-  let newPlaces;
-  const interval = setInterval(async () => {
-    newPlaces = await parsePlaces(page, browser);
+
+  await autoScroll(page);
+  setInterval(async () => {
+    const newPlaces = await parsePlaces(page);
     if (newPlaces.length > places.length) {
       places = newPlaces;
+      console.log(places);
     } else {
-      clearInterval(interval);
-      await browser.close();
+      clearInterval(5000); // Stop scrolling if no new content is loaded
     }
   }, 10000);
+
+  // await browser.close();
 })();
