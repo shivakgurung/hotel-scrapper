@@ -116,7 +116,7 @@ await pageInner.setViewport({ width: 1300, height: 2000 });
       places = newPlaces;
       // console.log("the places", places);
     } else {
-      console.log("sakiyo");
+      
       const hotelDetailList = parseDetail(browser, places)
       console.log(hotelDetailList)
       clearInterval(intervalId); // Use the correct interval ID to stop scrolling
