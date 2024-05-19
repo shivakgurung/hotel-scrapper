@@ -39,14 +39,55 @@ async function parsePlaces(page) {
   if (elements && elements.length) {
     for (const el of elements) {
       const link = await el.$eval("a", (a) => a.href);
-      console.log(link);
-      // const browserInner = await puppeteer.launch({ headless: false });
-      // const pageInner = await browserInner.newPage();
-      // await pageInner.setViewport({ width: 1300, height: 2000 });
-      // await pageInner.goto(link);
+      // console.log('the link', link);
+      places.push(link)
+      
     }
   }
   return places;
+}
+
+async function parseDetail(browser, places) {
+  const ArrayOfHotelDetails = []
+  let name, location, mapLocation, site, contact;
+  const pageInner = await browser.newPage();
+await pageInner.setViewport({ width: 1300, height: 2000 });
+
+  for (const link of places){
+  await pageInner.goto(link, { waitUntil: "networkidle2", timeout: 0 });
+
+  const nameElement = await pageInner.$(".DUwDvf.lfPIob");
+  if (nameElement) {
+    name = await pageInner.evaluate((el) => el.textContent, nameElement);
+  } else {
+    console.log("Element not found");
+  }
+
+  const nameElements = await pageInner.$$(".Io6YTe.fontBodyMedium.kR99db");
+  if (nameElements.length > 0) {
+    const firstFourElements = nameElements.slice(0, 4);
+    for (let i = 0; i < firstFourElements.length; i++) {
+      const value = await pageInner.evaluate(
+        (el) => el.textContent,
+        firstFourElements[i]
+      );
+      if (i === 0) location = value;
+      else if (i === 1) site = value;
+      else if (i === 2) contact = value;
+      else mapLocation = value;
+    }
+  } else {
+    console.log("No elements found with the class .DUwDvf.lfPIob");
+  }
+  const object = { name, location, site, contact, mapLocation };
+  console.log(object)
+  ArrayOfHotelDetails.push(object)
+  }
+  
+  
+  // console.log(object);
+  // console.log(ArrayOfHotelDetails)
+  return ArrayOfHotelDetails;
 }
 
 (async () => {
@@ -67,11 +108,13 @@ async function parsePlaces(page) {
     const newPlaces = await parsePlaces(page);
     if (newPlaces.length > places.length) {
       places = newPlaces;
-      console.log(places);
+      // console.log("the places", places);
     } else {
+      console.log("sakiyo");
+      const hotelDetailList = parseDetail(browser, places)
+      console.log(hotelDetailList)
       clearInterval(intervalId); // Use the correct interval ID to stop scrolling
     }
   }, 25000);
-  console.log("sakcha");
   // await browser.close();
 })();
