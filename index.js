@@ -63,15 +63,15 @@ async function parsePlaces(page) {
   let places = [];
 
   await autoScroll(page);
-  setInterval(async () => {
+  const intervalId = setInterval(async () => {
     const newPlaces = await parsePlaces(page);
     if (newPlaces.length > places.length) {
       places = newPlaces;
       console.log(places);
     } else {
-      clearInterval(5000); // Stop scrolling if no new content is loaded
+      clearInterval(intervalId); // Use the correct interval ID to stop scrolling
     }
-  }, 10000);
-
+  }, 25000);
+  console.log("sakcha");
   // await browser.close();
 })();
