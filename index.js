@@ -101,7 +101,7 @@ await pageInner.setViewport({ width: 1300, height: 2000 });
   const page = await browser.newPage();
   await page.setViewport({ width: 1300, height: 2000 });
   await page.goto(
-    "https://www.google.com/maps/search/hotels+in+pokhara/@28.1428736,84.1857381,9.55z"
+    "https://www.google.com/maps/search/hotels+in+lalitpur/@27.6859974,85.2975263,14z"
   );
 
   // // Initial parse of places
