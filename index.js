@@ -1,4 +1,6 @@
 const puppeteer = require("puppeteer");
+const generateCSV = require("./generateCSV");
+
 
 async function autoScroll(page) {
   await page.evaluate(async () => {
@@ -81,12 +83,16 @@ await pageInner.setViewport({ width: 1300, height: 2000 });
   }
   const object = { name, location, site, contact, mapLocation };
   console.log(object)
+  console.log(",")
   ArrayOfHotelDetails.push(object)
   }
   
   
   // console.log(object);
   // console.log(ArrayOfHotelDetails)
+  console.log('near the end of detail function');
+  // console.log(ArrayOfHotelDetails);
+  generateCSV(ArrayOfHotelDetails);
   return ArrayOfHotelDetails;
 }
 
